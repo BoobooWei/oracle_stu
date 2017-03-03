@@ -1,0 +1,19 @@
+用户安全审核的方式：
+数据库审核：使用数据字典记录用户名和口令
+conn scott/tiger
+
+外部审核：
+  操作系统审核(匿名登录sys用户):需要用户属于dba组,需要连接到操作系统本地
+    conn / as sysdba
+    关闭操作系统审核：将用户移出dba组, 不能使用匿名登录
+      gpasswd -d oracle dba
+    *操作系统审核的优先级别高于口令文件，不关闭操作系统审核是不会使用口令文件审核的！
+  口令文件审核：
+    conn sys/Oracle11g as sysdba
+  口令文件的位置和名字：
+    $ORACLE_HOME/dbs/orapw<$ORACLE_SID>
+  重新创建口令文件：当口令文件损坏，或者sys口令丢失
+    orapwd file=$ORACLE_HOME/dbs/orapw$ORACLE_SID password=oracle force=y
+
+只要能够登录操作系统，就可以使用sys登录数据库！
+

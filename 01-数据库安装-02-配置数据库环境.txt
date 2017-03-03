@@ -1,0 +1,48 @@
+配置数据库环境
+##################
+#开机自动启动数据库#
+##################
+vi /etc/oratab
+-------------------------------------------
+orcl:/u01/app/oracle/product/11.2.0/db_1:Y
+
+vi /etc/rc.local
+-------------------------------------------
+su - oracle '-c dbstart $ORACLE_HOME'
+
+###############
+#安装插件rlwrap#
+###############
+使sqlplus可以光标回退，命令回显，使用方向键操作命令行
+scp rlwrap-0.30-1.el5.i386.rpm root@172.25.0.12:/root
+ssh root@172.25.0.12
+rpm -ivh rlwrap-0.30-1.el5.i386.rpm
+
+在.bashrc中增加调用sqlplus的别名
+vi .bashrc
+------------------------------------
+alias sqlplus='rlwrap sqlplus'
+
+使.bashrc新增的内容生效
+source .bashrc
+
+启动sqlplus
+sqlplus /nolog
+sqlplus / as sysdba
+sqlplus scott/tiger
+
+###################
+#美化结果集的脚本文件#
+###################
+vi /home/oracle/login.sql
+-------------------------
+set linesize 120
+set pagesize 500
+
+增加环境变量使sqlplus永远能读取/home/oracle/login.sql
+vi .bashrc
+---------------------------
+export SQLPATH=/home/oracle
+
+使.bashrc新增的内容生效
+source .bashrc

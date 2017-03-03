@@ -1,0 +1,136 @@
+###############
+#基本select语句#
+###############
+查看scott用户下有哪些表和视图：
+SQL> select * from tab;
+
+描述一张表的结构，不看表中的数据
+SQL> desc dept
+
+查看雇员表中的所有数据：
+select * from dept;
+
+描述雇员表的结构
+SQL> desc emp
+
+查看emp表中感兴趣的列：
+SQL> select ename,sal from emp;
+
+在select中使用四则运算:null不能参与四则运算
+select ename,(sal+100)*12 from emp;
+
+为列定义别名
+select ename AS first_name,sal*12 "Annual Salary" from emp;
+
+连接操作符
+select ename,job,ename||' is a '||job detail from emp;
+
+压缩重复行
+select distinct deptno,job from emp;
+
+将缓冲区中的命令保存为脚本
+SQL> save p1_1.sql
+
+查看sql脚本内容
+SQL> get p1_1.sql
+
+运行sql脚本
+SQL> @p1_1.sql
+
+##############
+#限制和排列数据#
+##############
+工资高于1500的销售员？
+查询10部门的雇员和20部门工资小与2000的雇员？
+查询有奖金的雇员？
+
+使用rownum伪列限制查询返回的行的数量:
+SQL> select * from emp where rownum<6;
+SQL> select * from emp where sal between 2000 and 3000;
+
+#########
+#单行函数#
+#########
+字符串函数
+select lower('HelloWOrld') from dual;
+select * from emp where lower(ename)='scott';
+select upper('HelloWOrld') from dual;
+select initcap('Hello wOrld') from dual;
+
+select concat('Hello','World') from dual;
+select concat(ename,job) from emp;
+select substr('Helloworld',1,2) from dual;
+select substr('Helloworld',5) from dual;
+select substr('Helloworld',-5,2) from dual;
+select length('Helloworld') from dual;
+select instr('Helloworld','l') from dual;
+select instr('Helloworld','l',1,2) from dual;
+select instr('Helloworld','l',-1,2) from dual;
+select instr('Helloworld','l',-1) from dual;
+select lpad('Hello',10,'*') from dual;
+select rpad('Hello',10,'*') from dual;
+select trim('H' from 'HelloHhHH') from dual;
+select * from emp where trim(' ' from UPPER(ename))='SCOTT';
+select replace('Helloworld','owo','xxoo') from dual;
+
+select round(45.926,2) from dual;
+select round(45.926,0) from dual;
+select round(45.926) from dual;
+select round(45.926,-1) from dual;
+
+select trunc(45.926,2) from dual;
+select trunc(45.926,0) from dual;
+select trunc(45.926) from dual;
+select trunc(45.926,-1) from dual;
+
+select mod(15,4) from dual;
+select power(3,3) from dual;
+select ceil(1.00001) from dual;
+select abs(-190) from dual;
+
+select sysdate from dual;
+select sysdate,sysdate+1/1440 from dual;
+select months_between(sysdate,hiredate),ename from emp;
+select sysdate,add_months(sysdate,6) from dual;
+select sysdate,next_day(sysdate,'wed') from dual;
+select sysdate,last_day(to_date('01-feb-1900','dd-mon-yyyy')) from dual;
+select round(sysdate,'month') from dual;
+select round(sysdate,'year') from dual;
+select trunc(sysdate,'month') from dual;
+select trunc(sysdate,'year') from dual;
+
+select sysdate,to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual;
+select ename,sal,to_char(sal,'L999,999.99') from emp;
+select to_number('$800.00','L999.99') from dual;
+select to_date('2016-09-15','yyyy-mm-dd') from dual;
+
+select 
+to_char(sysdate,'yyyy') curr_year,
+to_char(to_date('05','yy'),'yyyy') yy05,
+to_char(to_date('99','yy'),'yyyy') yy99,
+to_char(to_date('05','rr'),'yyyy') rr05,
+to_char(to_date('99','rr'),'yyyy') rr99
+from dual;
+
+select ename,sal,comm,sal+nvl(comm,0) from emp;
+select ename,sal,comm,nvl2(comm,sal+comm,sal) from emp;
+select ename,sal,comm,coalesce(comm,sal,0) from emp;
+
+select ename,
+       job,
+       sal,
+case job when 'CLERK' then sal*1.1
+         when 'ANALYST' then sal*1.20
+else sal end raise_sal
+from emp
+order by job;
+
+select ename,
+       job,
+       sal,
+decode(job,
+      'CLERK',sal*1.1,
+      'ANALYST',sal*1.2,
+      sal) raise_sal
+from emp order by job;
+

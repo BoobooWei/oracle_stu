@@ -1,0 +1,291 @@
+######
+#序列#
+######
+数字产生器，只增不降，不可回退，为数字主键填充数据
+create sequence seq_empno 
+start with 7935
+increment by 1
+minvalue 7935
+maxvalue 9999
+cache 50
+nocycle;
+
+与序列相关的两个伪列，currval & nextval，崭新的序列没有初始化的序列没有currval只有nextval
+select seq_empno.currval,seq_empno.nextval from dual;
+
+序列的初始值不可以修改，其他属性都可以修改：
+alter sequence seq_empno increment by 5;
+alter sequence seq_empno minvalue 7936;
+alter sequence seq_empno maxvalue 8888;
+alter sequence seq_empno cache 100;
+alter sequence seq_empno cycle;
+
+使用序列：
+insert into emp (empno) values (seq_empno.nextval);
+
+删除序列：
+drop sequence seq_empno;
+-----------------------------------------------------------------------------------
+######
+#索引#
+######
+相当于目录，记录表中的关键字和rowid的对应关系，加速查找数据的速度。
+
+手工创建索引
+create index i_emp_ename on emp (ename);
+
+查看索引是否被使用
+set autotrace traceonly explain
+select * from emp where ename='SCOTT';
+set autotrace off
+
+基于函数的索引：
+create index i_emp_ename_f on emp (upper(ename));
+
+-------------------------------------------------------
+7839:AAAVREAAEAAAACXAAI
+
+AAAVRE      AAE     AAAACX     AAI
+OOOOOO      FFF     BBBBBB     RRR
+
+OOOOOO --> object_id
+FFF --> file_id
+BBBBBB --> block_id
+RRR --> row number
+
+A  -   Z    a    -   z   0   -   9   +   /
+0  -   25   26   -   51  52  -   61  62  63
+VRE = 21*64*64+17*64+4 = 87108 
+2*64+23 = 151 
+
+删除索引
+drop index I_EMP_NAME_F;
+---------------------------------------------------------------------------
+#######
+#同义词#
+#######
+对象的别名！
+私有同义词：
+create synonym e01 for scott.e01;
+公有同义词：
+create public synonym e01 for scott.e01;
+删除同义词：
+drop synonym e01;
+---------------------------------------------------------------------------
+##############
+#创建和管理用户#
+##############
+创建用户的基本命令
+create user smith identified by smith;
+授予权限
+grant create session to smith;
+连接到指定用户下
+conn smith/smith
+查看当前用户是谁
+show user
+查看当前版本下所有的系统权限
+select distinct privilege from dba_sys_privs;
+查看与table有关的权限
+select distinct privilege from dba_sys_privs where privilege like '%TABLE%';
+回收权限
+revoke CREATE ANY TABLE from SMITH;
+查看用户拥有的权限
+select * from session_privs;
+使用角色管理权限：
+create role r_clerk;
+grant create session,create table,create synonym to r_clerk;
+grant r_clerk to smith;
+角色的嵌套：
+create user jones identified by jones password expire;
+create role r_manager;
+grant r_clerk,create view to r_manager;
+grant r_manager to jones;
+使用sql语句修改用户口令：
+alter user jones identified by oracle;
+使用sqlplus命令修改口令:
+password
+对象权限：
+SQL> grant select on scott.e01 to smith;
+SQL> grant update (comm) on scott.e01 to smith;
+SQL> grant delete on scott.e01 to smith;
+SQL> grant insert on scott.e01 to smith;
+
+查看用户被授予的系统权限：
+SQL> select privilege from dba_sys_privs where GRANTEE='TOM';
+
+查看用户被授予的对象权限:
+col GRANTEE for a15
+col PRIVILEGE for a20
+col owner for a15
+SQL> SELECT GRANTEE,PRIVILEGE,OWNER,TABLE_NAME FROM DBA_TAB_PRIVS WHERE GRANTEE='TOM';
+
+查看用户被授予的列级别的对象权限:
+SQL> SELECT OWNER,TABLE_NAME,COLUMN_NAME,PRIVILEGE FROM DBA_COL_PRIVS where GRANTEE='TOM';
+
+用户被授予的角色:
+SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE='TOM';
+
+角色被授予的角色: R1，R2，R3
+SELECT * FROM ROLE_ROLE_PRIVS WHERE ROLE='R1';
+SELECT * FROM ROLE_ROLE_PRIVS WHERE ROLE='R2';
+
+角色被授予的系统权限:
+select * from ROLE_SYS_PRIVS WHERE ROLE='R1';
+select * from ROLE_SYS_PRIVS WHERE ROLE='R2';
+select * from ROLE_SYS_PRIVS WHERE ROLE='R3';
+
+角色被授予的对象权限:
+select * from ROLE_TAB_PRIVS WHERE ROLE='R1';
+select * from ROLE_TAB_PRIVS WHERE ROLE='R2';
+select * from ROLE_TAB_PRIVS WHERE ROLE='R3';
+---------------------------------------------
+练习：
+create role r1;
+grant create session,create table to r1;
+
+create role r2;
+grant create view to r2;
+grant delete on scott.emp to r2;
+
+create role r3;
+grant create procedure to r3;
+grant update (sal) on scott.emp to r3;
+
+grant r3 to r1;
+
+create user tom identified by tom;
+grant r1,r2 to tom;
+
+grant create sequence to tom;
+grant select on scott.emp to tom;
+grant insert on scott.emp to tom;
+grant update (comm) on scott.emp to tom;
+
+级联授权：
+dba --> user A --> user B
+系统权限级联授权：with admin option 权限回收无级联
+grant CREATE SEQUENCE to tom with admin option;
+
+对象权限级联授权：with grant option 权限回收有级联
+grant insert on scott.e01 to tom with grant option;
+-----------------------------------------------------------------------------------------
+#########
+#集合运算#
+#########
+union会压缩重复值：
+select * from e01
+union
+select * from emp;
+
+union all没有去重效果
+select * from e01
+union all
+select * from emp;
+
+select * from e01
+intersect
+select * from emp;
+
+select * from e01
+minus
+select * from emp;
+
+select * from emp
+minus
+select * from e01;
+
+select * from e01
+union all
+select dept.*,null,null,null,null,null from dept;
+-----------------------------------------------------------------------------------------
+####################
+#扩展的时间和日期类型#
+####################
+时间戳
+SQL> create table t01 (x int,y timestamp);
+SQL> insert into t01 values (1,current_timestamp);
+SQL> alter table t01 modify (y timestamp(9));
+全球化时间戳：
+SQL> create table t02 (x int,y timestamp with time zone);
+本地时间戳：
+SQL> create table t03 (x int,y timestamp with local time zone);
+
+SQL> select sessiontimezone from dual;
+SESSIONTIMEZONE
+----------------
++08:00
+
+SQL> select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),to_char(current_date,'yyyy-mm-dd hh24:mi:ss') from dual;
+
+TO_CHAR(SYSDATE,'YY TO_CHAR(CURRENT_DAT
+------------------- -------------------
+2015-12-22 13:41:00 2015-12-22 13:41:00
+
+SQL> alter session set time_zone='-8:00';
+
+SQL> select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),to_char(current_date,'yyyy-mm-dd hh24:mi:ss') from dual;
+
+TO_CHAR(SYSDATE,'YY TO_CHAR(CURRENT_DAT
+------------------- -------------------
+2015-12-22 13:43:38 2015-12-21 21:43:38
+
+select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),to_char(current_date,'yyyy-mm-dd hh24:mi:ss'),current_timestamp from dual;
+
+TO_CHAR(SYSDATE,'YY TO_CHAR(CURRENT_DAT CURRENT_TIMESTAMP
+------------------- ------------------- ---------------------------------------------------------------------------
+2015-12-22 13:46:26 2015-12-21 21:46:26 21-DEC-15 09.46.26.500401 PM -08:00
+
+select 
+to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),
+to_char(current_date,'yyyy-mm-dd hh24:mi:ss'),
+current_timestamp,
+localtimestamp 
+from dual;
+
+SQL> select dbtimezone,sessiontimezone from dual;
+
+SQL> select extract(month from sysdate) from dual;
+SQL> select extract(year from sysdate) from dual;
+
+SQL> select from_tz(timestamp '2015-12-22 13:58:00','+08:00') from dual;
+SQL> select from_tz(timestamp '2015-12-22 13:58:00','Australia/North') from dual;
+SQL> select tz_offset('Australia/North') from dual
+SQL> select * from v$timezone_names;
+SQL> select to_timestamp('2016-09-19 15:31:00','yyyy-mm-dd hh24:mi:ss') from dual;
+SQL> select to_timestamp_tz('2016-09-19 15:31:00 +03:00','yyyy-mm-dd hh24:mi:ss tzh:tzm') from dual;
+
+SQL> select * from v$timezone_names;
+SQL> select tz_offset('US/Samoa') from dual;
+
+select sysdate+to_yminterval('02-06') from dual;
+select sysdate,sysdate+to_yminterval('01-10')+to_dsinterval('05 18:25:17') from dual;
+
+select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),
+to_char(sysdate+to_dsinterval('5 02:10:18'),'yyyy-mm-dd hh24:mi:ss')
+from dual;
+--------------------------------------------------------------------------
+roll(a,b,c) --> n+1种聚集运算的结果
+
+group by a
+group by a,b
+group by a,b,c
+total
+
+cube(a,b,c) --> 2的n次方种聚集运算的结果
+group by a
+group by b
+group by c
+group by a,b
+group by a,c
+group by b,c
+group by a,b,c
+total
+
+select deptno,job,sum(sal),grouping(deptno),grouping(job) 
+from emp group by rollup(deptno,job);
+
+col deptno for a15
+select decode(GROUPING(DEPTNO)||GROUPING(JOB),'01','subtotal '||deptno,'11','total ',deptno) deptno,job,sum(sal) from emp group by rollup(deptno,job);
+
+select deptno,job,mgr,sum(sal) 
+from emp group by grouping sets ((deptno,job),(job,mgr));

@@ -1,0 +1,233 @@
+#########
+#数据修改#
+#########
+向表中添加新行：
+对所有列赋值
+desc emp
+insert into emp values (1,'Tom','CLERK',7698,to_date('yyyy-mm-dd','2016-08-25'),1450,null,30);
+对指定的列赋值
+insert into emp (empno,ename) values (2,'Jerry');
+
+inst.sql
+--------------------------------
+insert into dept values (&deptno,upper('&dname'),upper('&loc'));
+--------------------------------
+
+子查询拷贝行:
+insert into bonus select ENAME,JOB,SAL,COMM from emp where comm>0;
+
+修改表中数据：
+update emp set sal=sal*1.1 where ename='SMITH';
+
+insert into (select empno,ename,deptno from emp where deptno=10)
+values (2,'Alvin',20);
+
+ins10.sql
+--------------------------------
+insert into (select * from emp where deptno=10 with check option) 
+values (&empno,'&ename','&job',&mgr,'&hiredate',&sal,&comm,&deptno);
+--------------------------------
+
+insert into (select empno,ename,hiredate from emp where hiredate<=sysdate with check option)
+values (2,'jerry',to_date('20160729','yyyymmdd'));
+
+alter table emp modify (HIREDATE date default sysdate);
+select column_name,data_default from user_tab_columns where table_name='EMP';
+insert into emp (empno,ename) values (1,'Alvin');
+
+数据源：emp
+目标表：copy_emp
+create table copy_emp as select * from emp where deptno=10;
+
+matched--> 目标表中的主键值在数据源中被找到
+not matched --> 数据源中主键在目标表中不存在
+
+merge into copy_emp c
+using emp e
+on (c.empno=e.empno)
+when matched then
+update set
+c.ename=e.ename,
+c.job=e.job,
+c.mgr=e.mgr,
+c.hiredate=e.hiredate,
+c.sal=e.sal,
+c.comm=e.comm,
+c.deptno=e.deptno
+when not matched then
+insert values
+(e.empno,
+e.ename,
+e.job,
+e.mgr,
+e.hiredate,
+e.sal,
+e.comm,
+e.deptno);
+
+commit;
+将保存点写入跟踪文件：
+grant alter session to scott;
+alter session set events 'immediate trace name savepoints level 1';
+SQL> show parameter background 
+background_dump_dest = /u01/app/oracle/diag/rdbms/mydb/mydb/trace
+-----------------------------------------------------------------------------------------
+#############
+#创建和管理表#
+#############
+create table t01 (id number(3),name varchar2(12));
+
+desc t01
+
+虚拟列
+alter table e01 add (total as (sal+nvl(comm,0)));
+
+create table t02 (id number,name varchar2(12),salary number(7,2) default 1000);
+
+子查询建表拷贝行：
+create table t03 as select empno,ename,sal,deptno from emp where deptno=30;
+
+子查询建表拷贝表结构：
+create table t03 as select empno,ename,sal,deptno from emp where 1=0;
+
+创建事务级临时表：commit数据消失,表结构共享，数据是每个会话私有的
+create global temporary table temp01 as select * from emp;
+
+创建会话级临时表：connect & disconnect 数据消失
+create global temporary table temp02 on commit preserve rows as select * from emp;
+
+增加列：
+alter table t03 add (hiredate date);
+alter table t03 add (loc varchar2(10));
+修改列:
+alter table t03 modify (loc varchar2(13));
+alter table t03 modify (hiredate date default sysdate);
+重命名列:
+alter table t03 rename column loc to location;
+删除列:
+alter table t03 drop (hiredate);
+设置列为未使用状态：
+alter table t03 set unused column sal;
+删除未使用状态的列：
+alter table t03 drop unused columns;
+对列添加注释：
+comment on column t03.ename is 'first name';
+select COLUMN_NAME,COMMENTS from user_col_comments where TABLE_NAME='T03';
+对表添加注释：
+comment on table t03 is 'employees copy';
+select COMMENTS from user_tab_comments where TABLE_NAME='T03';
+重命名表：
+rename t03 to t04;
+截断表：
+truncate table t04;
+将表放入回收站
+drop table t02;
+SQL> show recyclebin
+将回收站对象还原
+SQL> flashback table t02 to before drop;
+彻底删除表：
+drop table t01 purge;
+-----------------------------------------------------------------------------------------
+#########
+#使用约束#
+#########
+建表时直接启用约束，列级别启用约束，约束产用系统命名
+create table t01 (id number not null);
+select CONSTRAINT_NAME,CONSTRAINT_TYPE,SEARCH_CONDITION from user_constraints where TABLE_NAME='T01';
+select constraint_name,column_name from user_cons_columns where table_name='T01';
+
+建表时直接启用约束，列级别启用约束，约束产用户命名
+create table t01 (id number constraint nn_t01_id not null);
+
+*not null约束只能在列级别启用
+
+启用唯一键约束
+create table t01 (id number constraint uk_t01_id unique);
+
+启用主键约束
+create table t01 (id number constraint pk_t01_id primary key);
+
+启用外键约束
+create table t02 (id number constraint fk_t02_id references t01); 
+select CONSTRAINT_NAME,CONSTRAINT_TYPE,R_CONSTRAINT_NAME from user_constraints where TABLE_NAME='T02';
+
+启用check约束
+create table t03 (id number,salary number constraint ck_t03_sal check (salary>1000));
+select CONSTRAINT_NAME,CONSTRAINT_TYPE,SEARCH_CONDITION from user_constraints where TABLE_NAME='T03';
+
+外键的级联操作：
+alter table t02 drop constraint FK_T02_ID;
+alter table t02 add constraint FK_T02_ID foreign key (id) references t01 on delete set null;
+alter table t02 add constraint FK_T02_ID foreign key (id) references t01 on delete cascade;
+
+查看约束状态：
+select CONSTRAINT_NAME,STATUS,VALIDATED from user_constraints where table_name='T01';
+
+alter table t02 modify constraint FK_T02_ID disable;
+alter table t02 modify constraint FK_T02_ID enable;
+alter table t02 modify constraint FK_T02_ID enable novalidate;
+alter table t02 modify constraint FK_T02_ID disable validate;
+
+ENABLED  VALIDATED
+ENABLED  NOT VALIDATED
+DISABLED NOT VALIDATED
+DISABLED VALIDATED:不影响子表数据的前提下重建父表
+
+create table t04 (x int constraint u unique);
+insert into t04 values (1);
+alter table t04 mdify constraint u disable;
+insert into t04 values (1);
+alter table t04 mdify constraint u enable novalidate;
+create index i_t04_x on t04 (x);
+
+排它操作
+alter table emp add constraint ck_emp_sal check (sal>1000 and sal is not null);
+@?/rdbms/admin/utlexcpt.sql
+alter table emp add constraint ck_t04_sal check (sal>=1000 and sal is not null) exceptions into exceptions;
+
+drop constraint:
+alter table e drop constraint XXXXXXXXXX;
+alter table d drop constraint PK_D_ID cascade;
+-----------------------------------------------------------------------------------------
+######
+#视图#
+######
+需要权限：
+SQL> select * from session_privs;
+
+PRIVILEGE
+-----------------------
+CREATE SESSION
+UNLIMITED TABLESPACE
+CREATE TABLE
+CREATE CLUSTER
+CREATE SEQUENCE
+CREATE PROCEDURE
+CREATE TRIGGER
+CREATE TYPE
+CREATE OPERATOR
+CREATE INDEXTYPE
+
+授予用户创建视图的权限：
+conn / as sysdba
+grant create view to scott;
+
+create view vu10 as select * from emp where deptno=10;
+
+create or replace view vu10 as select empno,ename,sal,deptno from emp where deptno=10;
+
+create or replace view vu10 (employee_id,first_name,salary,department_id)
+as select empno,ename,sal,deptno from emp where deptno=10;
+
+create or replace view vu10 as select empno employee_id,ename,sal salary,deptno department_id from emp where deptno=10;
+
+create or replace force view vu30 as select empno,ename,sal,deptno from e01 where deptno=30;
+select object_name,status from user_objects where object_name='VU30';
+
+create or replace force view vu30 as select empno,ename,sal,deptno from e01 where deptno=30 with check option;
+
+select text from user_views where view_name='VU30';
+
+drop view vu30;
+-----------------------------------------------------------------------------
+

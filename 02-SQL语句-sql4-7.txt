@@ -1,0 +1,139 @@
+#########
+#多表连接#
+#########
+笛卡尔连结:缺少连接条件或者连接条件错误
+select ename,loc from emp,dept;
+表连接一定要有连接条件，n张表连接至少需要n-1个条件
+等值连接：
+select ename,loc from emp,dept where emp.deptno=dept.deptno;
+外连接：将连接条件之外的行并到结果集
+select ename,loc from emp,dept where emp.deptno(+)=dept.deptno;
+打印有解析歧义的列:
+select ename,loc,emp.deptno from emp,dept where emp.deptno(+)=dept.deptno;
+select ename,loc,dept.deptno from emp,dept where emp.deptno(+)=dept.deptno;
+对表命名别名:原始名称无效，都要使用别名
+select e.ename,d.loc,d.deptno from emp e,dept d where e.deptno(+)=d.deptno;
+不等连接
+select e.ename,s.grade from emp e,salgrade s where e.sal between s.losal and s.hisal;
+自连接：
+select e.ename,m.ename from emp e,emp m where e.mgr=m.empno(+);
+select a.sal/b.sal from emp a,emp b where a.ename='SCOTT' and b.ename='SMITH';
+
+国标的表连接语法：SQL99
+笛卡尔连结：
+select ename,loc from emp cross join dept;
+自然连接：等值连接
+select ename,loc from emp natural join dept;
+两张表有多个同名的列：
+select ename,loc from emp join dept using (deptno);
+两张没有同名的列：
+select ename,loc from emp e join dept d on (e.deptno=d.deptno);
+右外连接
+select ename,loc from emp right outer join dept using (deptno);
+左外连接
+select ename,loc from emp left outer join dept using (deptno);
+全外连接
+select ename,loc from emp full outer join dept using (deptno);
+
+#########
+# 组函数 #
+#########
+select max(sal),min(sal),sum(sal),avg(sal) from emp;
+
+select count(*) from emp;
+select count(*) from emp where deptno=30;
+select count(deptno) from emp;
+select count(distinct deptno) from emp;
+select count(comm) from emp;
+select avg(comm) from emp;
+select avg(nvl(comm,0)) from emp;
+select deptno,sum(sal) from emp group by deptno;
+select deptno,job,sum(sal) from emp group by deptno,job;
+select deptno,sum(sal) from emp having sum(sal)>9000 group by deptno;
+--------------------------------
+10部门的最大工资
+--------------------------------
+查找重复的工资
+--------------------------------
+80年 81年 82年 87年都有多少新员工
+
+1980  1981  1982  1987
+----  ----  ----  ----
+   1    10     1     2
+--------------------------------
+
+工资高于BLAKE的？
+工资最低的人？
+低于10部门最低工资的人？
+高于30部门最高工资的人？
+工资相同的人？
+blake的工资是smith的几倍？
+每个部门工资最高的人？
+每个部门工资最高的前2个人？
+工资最高的前5行？ 
+工资6～10名？
+随机从表中取出3行数据？
+
+select deptno,ename, sal 
+from emp
+where sal in (select max(sal) from emp group by deptno) or
+sal in (select max(sal) 
+       from (select sal,deptno 
+             from emp where sal not in 
+                      (select max(sal) from emp group by deptno)) group by deptno)
+order by 1;
+
+select ename,deptno,sal from emp e where (select count(*) from emp where sal>e.sal and deptno=e.deptno)<2;
+
+select count(*) from emp where sal>800 and deptno=20;
+
+select * from (select ename,deptno,sal,rank () over (partition by deptno order by sal desc) Ord from emp) where ord<=2;
+
+select ename,deptno,sal,row_number () over (partition by deptno order by sal desc) Ord from emp;
+
+select * from (select rownum rn,a.* from (select ename,sal from emp order by sal desc) a) where rn between 6 and 10;
+
+select * from (select * from emp order by dbms_random.value()) where rownum<=3;
+
+查询雇员的姓名，工资，税，(1级不缴税，2-->2% ,3-->3%,4-->4%,5-->5%)
+select 
+  e.ename,
+  e.sal,
+  (sal*decode(s.grade,1,0,2,0.02,3,0.03,4,0.04,5,0.05,0)) tax
+from emp e,salgrade s 
+where e.sal between s.losal and s.hisal;
+
+部门总工资和部门上缴个税总和
+select deptno,sum(sal),sum(tax)
+from
+(select 
+  e.sal,
+  (sal*decode(s.grade,1,0,2,0.02,3,0.03,4,0.04,5,0.05,0)) tax,
+  deptno
+from emp e,salgrade s 
+where e.sal between s.losal and s.hisal)
+group by deptno;
+
+比WARD奖金低的人？
+select ename,comm from emp where NVL(comm,0)<(select comm from emp where ename='WARD');
+
+select ename,comm from emp where comm<(select comm from emp where ename='WARD') or comm is null;
+
+奖金最高的前两名雇员？
+select * from (select ename,comm from emp order by comm desc nulls last) where rownum<=2;
+
+select * from (select ename,comm from emp where comm is not null order by comm desc) where rownum<=2;
+
+工资高于本部门平均工资的人？
+
+使用替代变量进行分页查询
+select * from (select rownum rn,a.* from (select * from emp order by sal desc) a)
+where rn between &p*5-4 and &p*5;
+
+
+set PAUSE on
+show pagesize
+host pwd
+spool 0728am.txt append
+spool off
+

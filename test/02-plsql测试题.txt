@@ -1,0 +1,138 @@
+第2部分PL/SQL程序设计
+
+26.在PL/SQL程序中，能用保留字作变量吗？
+a)能；
+b)不能。
+
+27. 希望定义一个变量来存放放姓名(ename)列的数据，下面哪些变量命名是正确的？
+a) v%name varchar2(20);
+b) v_name varchar2(20);
+c) v*name varchar2(20);
+d) 9name varchar2(20); 
+
+28.%TYPE用于定义变量类型，%TYPE类型意思是：
+a)VARCHAR2;
+b)NUMBER;
+c)与表的某个列的类型一样。
+d)与某个以声明的变量类型一致
+
+29.%ROWTYPE用于定义变量的类型，它的意思是：
+a)与表的某个列的类型一样;
+b)与某几个列一样的类型;
+c)类型为 VARCHAR2;
+d)与某个以声明的游标变量类型一致；
+
+30.条件语句IF语句，要显式用 END IF; 来结束吗 ?
+a)每个IF语句都有一个END IF;
+b)不需要。
+
+31.WHILE循环语句格式为：
+
+While  <布尔表达式>  
+loop
+  要执行的语句;
+end loop;
+
+这样的语句在执行时是如何处理的？
+a)先执行各个语句再判断。
+b)先判定条件成立才执行循环体内的语句；
+
+
+32在PL/SQL编程中，显式游标用来处理查询多个记录的表，一般需要在程序说明四个步骤。如：
+cursor  游标名称  is  select 语句;
+open   游标名称;
+Fetch  游标名称  into  变量列表;
+Close  游标名称;
+
+如果为了不增加程序量，要省去CLOSE 游标语句，这样做对系统有好处吗？
+a)不好，因为该程序不释放资源；
+b)“CLOSE 游标“ 不是必须的，可以自动释放。
+
+33.在PL/SQL程序中，定义了一个cur1的游标，在打开该游标和使用后，如何得到已经取到了多少条记录？
+a)用%ISOPEN属性；
+b)用SQL%ROWCOUNT属性;
+c)用 CUR1%ROWCOUNT 属性。
+
+34.在PL/SQL块中，如果使用了UPDATE 语句，怎么知道所作的UPDATE 处理是否存在满足条件的行？
+a)用%ISOPEN属性；
+b)用SQL%NOFOUND属性;
+c)用NO_DATA_FOUND属性;
+
+35.异常处理是在一个BEGIN … END; 块中 对可能出现的错误的处理要求的描述。如果在PL/SQL程序中没有
+给出任何 EXCEPTION ，那么，在程序出错时，该程序能继续运行吗？
+a)在出现错误，程序立即终止；
+b)能继续执行另外的语句。
+
+36.要将程序以存储过程的方式存放到Oracle数据库中，要用下面哪个语句？
+a)CREATE TABLE语句；
+b)CREATE PROCEDURE 语句；
+c)CREATE VIEW 语句。
+
+37.函数和存储过程的差别是？下面哪种说法正确？
+a)没有差别；
+b)差别在于函数一定返回结果值，而存储过程可以不返回结果值；
+c)存储过存与函数都返回结果值.
+
+38.关于函数下面哪种说法正确？
+a)所有函数都可以在select语句中调用
+b)函数使用return返回值，所以函数不能有out型形式参数
+c)procedure能实现的操作函数都可以做
+
+39．如何得到存储过程、函数的源代码.
+a)从USER_SOURCE字典；
+b)从USER_ERRORS字典。
+
+40.下列对包的描述那些是正确的？
+a)包只能含有函数；
+b) 包只能含有过程；
+c)包是有相同功能的函数和过程的集合。
+
+41.在触发器编程中，采用何种方法可得到修改前的数据？
+a)先作备份；
+b)采用:OLD 关键字；
+c)采用Before insert,update,delete ;
+
+42.如果用户希望在数据库实例关闭前自动对重要表进行备份，应该采用下面哪些方案来完成？
+a)定义表级的DML触发器；
+b)定义数据库系统级触发器。
+
+43.如果用户定义了触发器，从哪个数据字典可查到有关信息？
+a)从USER_SOURCE字典；
+b)从USER_OBJECTS字典；
+c)从USER_TRIGGERS字典。
+
+44.数据库作业能实现任何时间点启动运行存储过程吗？
+a)可以；
+b)不能。
+
+45.要将存储过程变为作业来自动运行，要设置数据库实例的哪个参数？
+a)设置 job_queue_processes
+b)设置 Processes 参数；
+c)设置 OPEN_CURSORS参数
+
+46如何实现定时运行数据库作业？
+a)到指定时间点用命令去启动；
+b)操作系统的AT或crontab命令去启动;
+c)用DBMS_JOB.SUBMIT设置运行时间表达式；
+
+47.如何得到定义作业的信息？
+a)从USER_SOURCE数据字典;
+b)从USER_JOBS数据字典;
+c) 从USER_OBJECTS数据字典。
+
+48.如何将作业删除？
+a)exec dbms_job.remove(n);
+b)drop  procedure  procedure_name;
+c)drop  job  job_name;
+
+49.如何得到正在运行的作业的信息？
+a)从DBA_SOURCE;
+b)从DBA_TRIGGERS;
+c)从DBA_JOBS;
+d)从DBA_JOBS_RUNNING
+
+50.如何将一个存储过程的源代码进行加密？
+a)用自己的算法加密代码建立存储过程;
+b)采用创建同义词方法;
+c)采用WRAP实用程序转换;
+

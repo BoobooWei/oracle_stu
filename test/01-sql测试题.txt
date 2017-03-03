@@ -1,0 +1,183 @@
+sql测试题:
+
+emp表数据如下:empno 为主键，deptno为外键参照DEPT表DEPTNO列
+
+EMPNO ENAME  JOB         MGR HIREDATE     SAL  COMM DEPTNO
+----- ------ --------- ----- ---------- ----- ----- ------
+ 7369 SMITH  CLERK      7902 17-12月-80   800           20
+ 7499 ALLEN  SALESMAN   7698 20-2月 -81  1600   300     30
+ 7521 WARD   SALESMAN   7698 22-2月 -81  1250   500     30
+ 7566 JONES  MANAGER    7839 02-4月 -81  2975           20
+ 7654 MARTIN SALESMAN   7698 28-9月 -81  1250  1400     30
+ 7698 BLAKE  MANAGER    7839 01-5月 -81  2850           30
+ 7782 CLARK  MANAGER    7839 09-6月 -81  2450           10
+ 7839 KING   PRESIDENT       17-11月-81  5000           10
+ 7844 TURNER SALESMAN   7698 08-9月 -81  1500     0     30
+ 7900 JAMES  CLERK      7698 03-12月-81   950           30
+ 7902 FORD   ANALYST    7566 03-12月-81  3000           20
+ 7934 MILLER CLERK      7782 23-1月 -82  1300           10
+
+dept表数据如下:其中deptno是主键，被emp表DEPTNO键引用
+
+DEPTNO DNAME      LOC
+------ ---------- --------
+    10 ACCOUNTING NEW YORK
+    20 RESEARCH   DALLAS
+    30 SALES      CHICAGO
+    40 OPERATIONS BOSTON
+
+1、下面的语句有几处错误?
+  SELECT empno,ename
+         sal x 12  'ANNUAL SALARY'
+  FROM      emp;
+
+  A.1处错误
+  B.2处错误
+  C.3处错误
+  D.4处错误
+
+2、关于下列语句的描述哪个是正确的：DELETE  DEPT  WHERE  DEPTNO=10；
+  A．该语句可以正确执行。
+  B．10 应该加单引。
+  C．缺少 FROM关键字。
+  D．违反了完整性约束。
+
+3、下列哪个语句显示出MGR为NULL的员工：
+  A．SELECT  ENAME  FROM   EMP   WHERE  MGR=NULL;
+  B．SELECT  ENAME  FROM   EMP   WHERE  MGR  IS  NULL;
+  C．SELECT  ENAME  FROM   EMP   WHERE  MGR=0;
+  D．SELECT  ENAME  FROM   EMP   WHERE  MGR='';
+
+4、关于ORDER BY 语句哪个描述是对的：（2个答案）
+  A．只能对一列进行排序。
+  B．排序的列必须在SELECT子句中。
+  C．可以多列排序。
+  D．可以用别名排序。
+
+5、下列哪个语句显示MGR为NULL的员工，显示的结果为'NO MANAHER'：
+  A．SELECT  ENAME ,MGR  FROM   EMP   WHERE  MGR  IS  NULL;
+  B．SELECT  ENAME ,NVL(MGR,'NO MANAGR') FROM   EMP   WHERE  MGR  IS  NULL;
+  C．SELECT  ENAME ,NVL(TO_CHAR(MGR),'NO MANAGER') FROM   EMP   WHERE  MGR  IS  NULL;
+  D. SELECT  ENAME ,NVL(TO_CHAR(MGR),'NO MANAGER') FROM   EMP   WHERE  MGR = NULL;
+
+6、下列哪一个SQL语句可以得到工资（sal）在1500到3000的所有员工的
+   编号（empno）,名字（ename）, 工资（sal）, 职位（job），并按工资从大到小排序:
+  A.SELECT EMPNO,ENAME,SAL,DEPTNO FROM EMP where sal between 1500 and 3000 GROUP BY SAL;
+  B.SELECT EMPNO,ENAME,SAL,DEPTNO FROM EMP ORDER BY SAL;
+  C.SELECT EMPNO,ENAME,SAL,DEPTNO FROM EMP GROUP BY SAL DESC;
+  D.SELECT EMPNO,ENAME,SAL,DEPTNO FROM EMP where sal between 1500 and 3000 ORDER BY SAL DESC;
+
+7、下列哪一个SQL语句可以得到每个部门的平均工资（sal）和人数（2个答案）
+  A.SELECT DEPTNO,AVG(SAL),SUM(ENAME) FROM EMP GROUP BY DEPTNO;
+  B.SELECT DEPTNO,AVG(SAL),COUNT(EMPNO) FROM EMP GROUP BY DEPTNO;
+  C.SELECT DEPTNO,AVG(SAL),SUM(EMPNO) FROM EMP GROUP BY DEPTNO;
+  D.SELECT DEPTNO,AVG(SAL),COUNT(*) FROM EMP GROUP BY DEPTNO;
+
+8、下列哪一个SQL语句可以得到职位（job）为经理（MANAGER）的员工的名字（ename）, 
+   工资（sal），和地点（loc）
+  A.SELECT ENAME,SAL,LOC FROM EMP;
+  B.SELECT E.ENAME,E.SAL,D.LOC FROM EMP E,DEPT D;
+  C.SELECT E.ENAME,E.SAL,D.LOC FROM EMP E,DEPT D WHERE E.DEPTNO=D.DEPTNO AND JOB='MANAGER';
+  D.SELECT E.ENAME,E.SAL,D.LOC FROM EMP E,DEPT D WHERE E.EMPNO=D.EMPNO AND JOB='MANAGER';
+
+9、关于VIEW的描述哪个是不正确的：
+  A．视图可以提高系统的性能。
+  B．视图可以简化查询的书写。
+  C．视图可以限制对数据的访问。
+  D．让不同的用户看到不同的数据。
+
+10.对where子句中的条件描述正确的是?
+  A.大小写不敏感
+  B.对日期型格式敏感
+  C.可以过滤组函数计算结果
+  D.不能使用逻辑运算
+
+11.下列语句能得到正确结果的是?
+  A.select ename,sal from emp where upper(ename)='king';
+  B.select to_char(sal,'L999.99') from emp;
+  C.select 12*12 from dual;
+  D.select ename,hiredate from emp where hiredate>to_date('81/01/01','yy/mm/dd');
+
+12.五张表连接至少需要几个连接条件?
+  A.2个
+  B.3个
+  C.4个
+  D.5个
+
+13.下列语句能正确执行的是?
+  A.SELECT deptno,COUNT(ename) FROM emp;
+  B.SELECT deptno, AVG(sal) FROM emp WHERE max(sal) > 5000;
+  C.SELECT deptno, AVG(sal) FROM emp WHERE max(sal) > 5000 group by deptno;
+  D.SELECT deptno,COUNT(ename) FROM emp group by deptno;
+
+14.下列语句能正确执行的是?
+  A.select ename from emp where sal=(select max(sal) from emp group by deptno);
+  B.select ename from emp where job in (select ename from emp);
+  C.select deptno,ename from emp where sal> all (select min(sal) from emp group by deptno);
+  D.select count(sal),sal from emp group by sal where count(sal)>2;
+
+15.怎样修改列(value number(20))的显示长度为10个字节?
+  A.column value formate a10
+  B.set value=10
+  C.col value for 9999999999
+  D.set linesize 10
+
+16.关于替换变量描述正确的是?
+  A.替换变量等于主机变量
+  B.替换变量不能出现在having字句中
+  C.替换变量可以帮定到SQL*PLUS环境中
+  D.替换变量只能用&符号前缀
+
+17.下列那些不是DML语句?
+  A.SELECT 
+  B.INSERT 
+  C.UPDATE
+  D.DELETE
+
+18.关于ROLLBACK和COMMIT描述正确的是?
+  A.COMMIT可以提交部分事务操作
+  B.COMMIT后数据可以用rollback还原
+  C.ROLLBACK由临时表空间提供数据
+  D.ROLLBACK可以回退部分事务操作
+
+19.下列语句能正确执行的是?
+  A.create table "all" (ename char);
+  B.create table "all" (ename varchar2);
+  C.create table all (id int);
+  D.create table 'all' (id int);
+
+20.关于序列的描述正确的是?
+  A.序列可以回退
+  B.序列可以被缓存
+  C.可以修改序列的所有参数
+  D.序列可以保证记录连续
+
+21.下列语句能正确执行的是?
+  A.INSERT INTO EMP (ENAME,SAL,DEPTNO) VALUES ('张建中',1000,10);
+  B.INSERT INTO EMP (ENAME,SAL,DEPTNO) VALUES ('张建中',1000,50);
+  C.INSERT INTO EMP (EMPNO,ENAME,SAL,DEPTNO) VALUES (7935,'张建中',1000,50);
+  D.INSERT INTO EMP (EMPNO,ENAME,SAL,DEPTNO) VALUES (7935,'张建中',1000,'10');
+
+22.下列语句能得到正确结果的是?
+  A.INSERT INTO EMP VALUES (7369,'ALVIN','职员',7902,'20-12月-06',800,20);
+  B.INSERT INTO EMP VALUES (7935,'ALVIN',"职员",7902,'2006-12-20',800,20);
+  C.INSERT INTO EMP VALUES (7935,'ALVIN',"职员",7902,sysdate,800,null,30);
+  D.INSERT INTO EMP VALUES (7935,'ALVIN','职员',7902,to_date('980101','yymmdd'),800,null,30);
+
+23.下列语句能正确执行的是?
+  A.UPDATE EMP SET ENAME=ALVIN WHERE EMPNO=7839;
+  B.UPDATE EMP SET EMPNO=88888 WHERE EMPNO=7839;
+  C.UPDATE EMP SET DEPTNO IS NULL WHERE EMPNO=7839;
+  D.UPDATE EMP SET DEPTNO=NULL WHERE EMPNO=7839;
+
+24.下列语句能正确执行的是?
+  A.DELETE EMP WHERE AVG(SAL)> ANY (SELECT AVG(SAL) FROM EMP GROUP BY DEPTNO);
+  B.DELETE DEPT WHERE ROWNUM=3;
+  C.DELETE dept WHERE DEPTNO=10;
+  D.DELETE EMP WHERE MGR IS NULL;
+
+25.下列哪些操作会触发隐式COMMIT?(2个答案)
+  A.DDL语句
+  B.EXIT退出SQLPLUS
+  C.系统崩溃
+  D.Alt+F4关闭SQLPLUS
